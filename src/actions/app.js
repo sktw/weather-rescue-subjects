@@ -13,18 +13,28 @@ export function setImage(img) {
 export function fetchImage() {
     return (dispatch, getState) => {
         const storeState = getState();
-        const {src} = storeState.app.subject.imageData;
+        const {subject} = storeState.app;
+        if (subject === null) {
+            return Promise.reject(new Error('subject not set'));
+        }
+        
+        const {src} = subject.imageData;
 
-        const img = new Image();
-        img.onload = () => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                return resolve(img);
+            };
+
+            img.onerror = err => {
+                return reject(err);
+            };
+
+            img.src = src;
+
+        }).then(img => {
             dispatch(setImage(img));
-        };
-
-        img.onerror = err => {
-            console.error(err);
-        };
-
-        img.src = src;
+        });
     }
 }
 
@@ -38,7 +48,12 @@ export function setSubject(subject) {
 export function fetchSubject() {
     return (dispatch, getState) => {
         const storeState = getState();
-        const workflowId = storeState.app.workflow.id;
+        const {workflow} = storeState.app;
+        if (workflow === null) {
+            return Promise.reject(new Error('workflow not set'));
+        }
+
+        const workflowId = workflow.id;
 
         return fetch('/api/subjects/queued?workflowId=' + workflowId).then(response => {
             return response.json().then(json => Promise.resolve([response.status, json]))
@@ -53,8 +68,6 @@ export function fetchSubject() {
             else {
                 console.error(json.message);
             }
-        }).catch (err => {
-            console.error(err);
         });
     };
 }
@@ -79,8 +92,6 @@ export function fetchWorkflow() {
             else {
                 console.error(json.message);
             }
-        }).catch(err => {
-            console.error(err);
         });
     };
 }
@@ -158,7 +169,9 @@ export function taskNext() {
                 ok = false;
                 dispatch(submitClassification()).finally(() => {
                     dispatch(reset());
-                    dispatch(fetchSubject()).then(() => dispatch(fetchImage()));
+                    return dispatch(fetchSubject()
+                        ).then(() => dispatch(fetchImage())
+                        ).catch(err => console.error(err))
                 });
             }
         });

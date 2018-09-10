@@ -114,20 +114,8 @@ describe('reducer', () => {
 
 });
 
-const initialState = {
-    app: {
-        workflow: TestData.workflow,
-        subject: TestData.subject
-    },
-    steps: {
-        corner: {
-            corners: TestData.corners
-        }
-    }
-};
-
 describe('fetchImage', () => {
-    it('should create and set src on image object', () => {
+    it('should create and set src on image object', (done) => {
         global.Image = function() {
         };
         Object.defineProperty(global.Image.prototype, 'src', {
@@ -143,11 +131,41 @@ describe('fetchImage', () => {
         };
 
         const store = storeCreator(initialState);
-        store.dispatch(AppActions.fetchImage());
-        const actions = store.getActions();
-        expect(actions).to.have.length(1);
-        expect(actions[0]).to.have.property('type', 'SET_IMAGE');
+        const result = store.dispatch(AppActions.fetchImage());
+
+        result.then(() => {
+            const actions = store.getActions();
+            expect(actions).to.have.length(1);
+            expect(actions[0]).to.have.property('type', 'SET_IMAGE');
+            done();
+        });
     });
+
+    it('should reject with error if subject not set', (done) => {
+        global.Image = function() {
+        };
+        Object.defineProperty(global.Image.prototype, 'src', {
+            set: function() {
+                this.onload();
+            }
+        });
+
+        const initialState = {
+            app: {
+                subject: null
+            }
+        };
+
+
+        const store = storeCreator(initialState);
+        const result = store.dispatch(AppActions.fetchImage());
+        result.catch(err => {
+            expect(err.message).to.equal('subject not set');
+            done();
+        });
+
+    });
+
 });
 
 describe('fetchSubject', () => {
@@ -177,6 +195,31 @@ describe('fetchSubject', () => {
             done();
         });
     });
+
+    it('should reject with error if workflow not set', (done) => {
+        global.Image = function() {
+        };
+        Object.defineProperty(global.Image.prototype, 'src', {
+            set: function() {
+                this.onload();
+            }
+        });
+
+        const initialState = {
+            app: {
+                workflow: null
+            }
+        };
+
+        const store = storeCreator(initialState);
+        const result = store.dispatch(AppActions.fetchSubject());
+        result.catch(err => {
+            expect(err.message).to.equal('workflow not set');
+            done();
+        });
+    });
+
+
 
     it('should dispatch classifications complete if no more queued subjects', (done) => {
         global.Image = function() {

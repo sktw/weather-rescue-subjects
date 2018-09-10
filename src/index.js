@@ -19,7 +19,8 @@ const store = createStore(rootReducer, applyMiddleware(...middleware));
 
 store.dispatch(fetchWorkflow()
     ).then(() => store.dispatch(fetchSubject())
-    ).then(() => store.dispatch(fetchImage()));
+    ).then(() => store.dispatch(fetchImage())
+    ).catch(err => console.error(err));
 
 ReactDOM.render(
     <Provider store={store}>
