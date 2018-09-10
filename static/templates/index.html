@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <% htmlWebpackPlugin.options.context.css.forEach(function(css) { %>
+            <%= css %>
+        <% }) %>
+        <title>Weather Rescue Subjects</title>
+    </head>
+    <body>
+        <div id="app">
+        </div>
+        <script>
+            var PUBLIC_PATH = "<%= htmlWebpackPlugin.options.context.publicPath %>";
+        </script>
+        <% htmlWebpackPlugin.options.context.js.forEach(function(js) { %>
+            <%= js %>
+        <% }) %>
+    </body>
+</html>
